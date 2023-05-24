@@ -39,6 +39,4 @@ bin.pack(boxes2) */
 
 geneticAlgorithm(boxes2, bin); 
 geneticAlgorithm(boxes3, bin); 
-//console.log(result.map(box => [...box.coordinates, ...box.dimensions]));
-console.log([bin._boxes.flat()].flat().map(el => 
-    [el.x, el.y, el.z, el.box.w, el.box.h, el.box.d]));
+console.log(bin._boxes.map(box => [box.x, box.y, box.z, box.w, box.h, box.d]))

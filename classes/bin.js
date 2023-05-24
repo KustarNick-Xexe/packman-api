@@ -67,6 +67,6 @@ module.exports.Bin = class Bin {
     }
 
     save(placements) {
-        this._boxes.push(placements);
+        this._boxes = [ ...this._boxes, ...placements ];
     }
 }
