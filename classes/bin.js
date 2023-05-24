@@ -19,7 +19,6 @@ module.exports.Bin = class Bin {
 
         for (let box of boxes) {
             let [boxWidth, boxHeight, boxDepth] = box.dimensions;
-            let placed = false;
             outer:
             for (let x = 0; x <= this.binWidth - boxWidth; x++) {
                 for (let y = 0; y <= this.binHeight - boxHeight; y++) {
@@ -58,14 +57,16 @@ module.exports.Bin = class Bin {
                             box.y = y;
                             box.z = z;
                             placements.push({ box: box, x: x, y: y, z: z, orientation: box.orientation });
-                            placed = true;
                             break outer;
                         }
                     }
                 }
             }
         }
-        this._boxes.push(placements);
         return placements;
+    }
+
+    save(placements) {
+        this._boxes.push(placements);
     }
 }

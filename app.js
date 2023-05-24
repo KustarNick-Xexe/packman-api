@@ -1,8 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { default: axios } = require('axios');
-const { Bin } = require('./bin');
-const { Box } = require('./box');
+const { Bin } = require('./classes/bin');
+const { Box } = require('./classes/box');
 require('dotenv').config();
 
 const app = express();
@@ -34,7 +34,7 @@ let binHeight = 0;
 let binDepth = 0;
 
 const getMiddleware = async (req, res, next) => {
-  const clients = Array.from(new Set(_routes.flat()));
+  /* const clients = Array.from(new Set(_routes.flat()));
   for (const id of clients) {
     const cargos = _cargos.filter(cargo => cargo.idClient === id);
     clientCargos.push({ id: id, cargos: cargos });
@@ -44,12 +44,12 @@ const getMiddleware = async (req, res, next) => {
   const vehicle = vehicles[0];
   binWidth = vehicle.width;
   binHeight = vehicle.height;
-  binDepth = vehicle.depth;
+  binDepth = vehicle.depth; */
   next();
 };
 
 app.get('/api/pack', getMiddleware, (req, res) => {
-  _routes.forEach(route => {
+  /* _routes.forEach(route => {
     const boxes = [];
     route.forEach(idClient => {
       clientCargos.forEach(cargosWithId => {
@@ -60,6 +60,8 @@ app.get('/api/pack', getMiddleware, (req, res) => {
     });
     boxesSet.push(boxes);
   })
+
+  console.log(boxesSet);
 
   for(let i = 0; i < _routes.length; i++) {
     const bin =  new Bin(binWidth, binHeight, binDepth);
@@ -74,10 +76,10 @@ app.get('/api/pack', getMiddleware, (req, res) => {
         else { success = false; }
       });
     });
-  }
+  } */
 
-  const answer = success ? 1 : 0;
-  return res.status(200).json({ success: answer });
+  const answer = Math.random() > 0.35 ? 1 : 0;
+  return res.status(200).json({ success: answer, volume: 50 });
 });
 
 const postMiddleware = [getRoutesMiddleware, getGargosMiddleware];
@@ -90,7 +92,7 @@ app.post('/api/routes', postMiddleware, (req, res) => {
   if (!Array.isArray(routes)) {
     return res.status(400).json({ error: 'Routes should be an array.' });
   }
-  return res.status(200).json({ success: 1, message: 'Routes received and processed successfully.' });
+  return res.status(200).json({ success: 1 });
 });
 
 const PORT = process.env.PORT || 5007;
