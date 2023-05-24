@@ -2,6 +2,15 @@ import express from 'express';
 import { json as jsonParser } from 'body-parser';
 import dotenv from 'dotenv';
 
+ /* const routes = Array.from(new Set(_routes.flat()));
+  routes.forEach(idClient => {
+    clientCargos.forEach(cargosWithId => {
+      if (cargosWithId.id === idClient) {
+        boxesSet.push(cargosWithId.cargos);
+      }
+    })
+  }) */
+
 dotenv.config();
 
 const app = express();
