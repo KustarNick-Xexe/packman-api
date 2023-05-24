@@ -2,23 +2,37 @@ const { Bin } = require('./bin');
 const { Box } = require('./box');
 
 const boxes1 = [
-    new Box(5, 5, 10, false),
-    new Box(5, 5, 10, false),
-    new Box(5, 5, 10, false),
-    new Box(5, 5, 10, false),
-    new Box(5, 5, 10, false),
+    new Box(20, 20, 110, false),
+    new Box(20, 20, 120, false),
+    new Box(150, 50, 70, false),
+    new Box(20, 20, 110, false),
+    new Box(20, 20, 120, false),
+    new Box(150, 50, 70, false),
+    new Box(20, 20, 120, false),
+    new Box(150, 50, 70, false),
+    new Box(20, 20, 110, false),
+    new Box(20, 20, 120, false),
+    new Box(150, 50, 70, false),
+    new Box(20, 20, 110, false),
 ];
 
 const boxes2 = [
-    new Box(5, 5, 10, false),
-    new Box(5, 5, 10, false),
-    new Box(5, 5, 10, false),
-    new Box(5, 5, 10, false),
-    new Box(5, 5, 10, false),
+    new Box(20, 20, 120, false),
+    new Box(150, 50, 70, false),
+    new Box(20, 20, 120, false),
+    new Box(150, 50, 70, false),
+    new Box(20, 20, 110, false),
+    new Box(20, 20, 120, false),
+    new Box(150, 50, 70, false),
+    new Box(20, 20, 110, false),
+    new Box(20, 20, 120, false),
+    new Box(150, 50, 70, false),
+    new Box(20, 20, 120, false),
+    new Box(150, 50, 70, false),
 ];
 
 // Create a new bin
-const bin = new Bin(60, 60, 20);
+const bin = new Bin(600, 600, 200);
 bin.pack(boxes1)
 bin.pack(boxes2)
 

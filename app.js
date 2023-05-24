@@ -6,9 +6,8 @@ require('dotenv').config();
 const app = express();
 app.use(bodyParser.json());
 
-const _routes = [];
-const _clients = [];
-const _cargos = [];
+let _routes = [];
+let _cargos = [];
 
 const getRoutesMiddleware = (req, res, next) => {
   const points = req.body.routes.map(route => route.split('-'));
@@ -16,15 +15,12 @@ const getRoutesMiddleware = (req, res, next) => {
   req.routes = routes.map(route => route.map(point => +point));
   req.clientsId = [...req.routes.flat()];
   _routes = req.routes;
-  //console.log('POST requests with:', req.routes);
-  //console.log('POST requests with:', req.clientsId);
   next(); 
 };
 
 const readDBMiddleware = async (req, res, next) => {
   const response = await axios.get('http://localhost:3000/api/clients');
   req.clients = await response.data;
-  //console.log('readDB:', clients);
   next();
 };
 
@@ -40,6 +36,10 @@ const setPartMiddleware = (req, res, next) => {
     for (let id of req.clientsId) {
       _clients.push(_cargos.filter(cargo => cargo.pointId === id))
     }
+
+    console.log('1', _routes);
+    console.log('2', _clients);
+    console.log('3', _cargos);
     next();
 };
 
