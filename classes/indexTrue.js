@@ -36,9 +36,17 @@ class Bin {
                 this._bin[i][j] = new Array(binDepth).fill(0);
             }
         }
+        this.bin = new Array(binWidth);
+        for (let i = 0; i < binWidth; i++) {
+            this.bin[i] = new Array(binHeight);
+            for (let j = 0; j < binHeight; j++) {
+                this.bin[i][j] = new Array(binDepth).fill(0);
+            }
+        }
     }
 
     pack(boxes) {
+        this._bin = JSON.parse(JSON.stringify(this.bin));
         let placements = [];
         boxes = boxes.sort((a, b) => b.volume - a.volume);
         for (let box of boxes) {
@@ -90,33 +98,18 @@ class Bin {
         return placements;
     }
 
-    save(placements) {
-        this._boxes = [...this._boxes, ...placements];
-    }
-
-    reset() {
-        this._bin = new Array(this.binWidth);
-        for (let i = 0; i < this.binWidth; i++) {
-            this._bin[i] = new Array(this.binHeight);
-            for (let j = 0; j < this.binHeight; j++) {
-                this._bin[i][j] = new Array(this.binDepth).fill(0);
-            }
-        }
-
-        for (let packedBox of this._boxes) {
-            const x = packedBox[0];
-            const y = packedBox[1];
-            const z = packedBox[2];
-            const w = packedBox[3];
-            const h = packedBox[4];
-            const d = packedBox[5];
-            for (let i = x; i <= w; i++) {
-                for (let j = y; j <= h; j++) {
-                    for (let k = z; k <= d; k++) {
-                        this._bin[x + i][y + j][z + k] = packedBox.fragile ? 2 : 1;
+    save(packedBoxes) {
+        for (let packedBox of packedBoxes) {
+            const { box, x, y, z, orientation } = packedBox;
+            const [boxWidth, boxHeight, boxDepth] = box.dimensions;
+            for (let i = 0; i < boxWidth; i++) {
+                for (let j = 0; j < boxHeight; j++) {
+                    for (let k = 0; k < boxDepth; k++) {
+                        this.bin[x + i][y + j][z + k] = box.fragile ? 2 : 1;
                     }
                 }
             }
+            this._boxes.push({ box, x, y, z, orientation });
         }
     }
 }
@@ -126,7 +119,6 @@ function isPackable(boxes, orientations, bin) {
         boxes[i].orientation = orientations[i];
     }
     const packingResult = bin.pack(boxes);
-    bin.reset();
     return packingResult.length === boxes.length;
 }
 
@@ -134,63 +126,31 @@ function setOrientation(boxes, orientations) {
     for (let i = 0; i < boxes.length; i++) {
         boxes[i].orientation = orientations[i];
     }
-    
+
     return boxes;
 }
 
 const boxes1 = [
     new Box(1, 1, 2),
-    new Box(1, 2, 1, true),
-    new Box(2, 1, 1),
-    new Box(1, 1, 2),
-    new Box(1, 2, 1, true),
-    new Box(2, 1, 1),
-    new Box(1, 1, 2),
-    new Box(1, 2, 1, true),
-    new Box(2, 1, 1),
+    new Box(1, 2, 1),
 ];
 const boxes2 = [
-    new Box(1, 1, 2, true),
-    new Box(1, 2, 1, true),
-    new Box(2, 1, 1),
-    new Box(1, 1, 2),
-    new Box(1, 1, 2, true),
-    new Box(1, 2, 1, true),
-    new Box(2, 1, 1),
-    new Box(1, 1, 2),
-    new Box(1, 1, 2, true),
-    new Box(1, 2, 1, true),
-    new Box(2, 1, 1),
-    new Box(1, 1, 2),
-];
-
-const boxes3 = [
     new Box(1, 1, 2),
     new Box(1, 2, 1),
-    new Box(2, 1, 1),
-    new Box(1, 1, 2, true),
-    new Box(1, 1, 2),
-    new Box(1, 2, 1),
-    new Box(2, 1, 1),
-    new Box(1, 1, 2, true),
-    new Box(1, 1, 2),
-    new Box(1, 2, 1),
-    new Box(2, 1, 1),
-    new Box(1, 1, 2, true),
 ];
 
 let bins = [];
-for (let i = 0; i < 5; i++) {
+for (let i = 0; i < 2; i++) {
     bins.push(new Bin(10, 10, 10));
 }
 
-const boxes = [boxes1, boxes2, boxes3];
+const boxes = [boxes1, boxes2];
 
 bins = bins.map(bin => {
     const variants = [];
     boxes.forEach(_boxes => {
         let orientations = [];
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 2; i++) {
             do {
                 orientations = [];
                 for (let j = 0; j < _boxes.length; j++) {
@@ -198,21 +158,24 @@ bins = bins.map(bin => {
                     orientations.push(orientation);
                 }
             } while (!isPackable(_boxes, orientations, bin));
-        
         }
         _boxes = setOrientation(_boxes, orientations);
+        const packedBoxes = bin.pack(_boxes);
+        bin.save(packedBoxes);
         variants.push(orientations);
-        bin.pack(_boxes);
-        bin.reset();
-        bin.save(_boxes);
     })
 
     return bin;
 });
 
 bins.forEach(bin => {
-    console.log(bin._boxes.map(box => [box.x, box.y, box.z, box.w, box.h, box.d, box.fragile]));
-})
+    console.log(bin._boxes.map(packedBox => {
+        const { box, x, y, z, orientation } = packedBox;
+        // Устанавливаем ориентацию перед получением размеров коробки
+        box.orientation = orientation;
+        return [x, y, z, ...box.dimensions, box.fragile];
+    }));
+});
 
 /* console.log(bins.map(bin => {
     bin._boxes.map(box => [box.x, box.y, box.z, box.w, box.h, box.d, box.fragile])
