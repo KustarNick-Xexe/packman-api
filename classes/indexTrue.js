@@ -109,6 +109,17 @@ class Bin {
                     }
                 }
             }
+
+            if (box.fragile) {
+                for (let i = 0; i < boxWidth; i++) {
+                    for (let j = 0; j < boxHeight; j++) {
+                        for (let k = z + boxDepth; k < this.binDepth; k++) {
+                            this.bin[x + i][y + j][k] = 2;
+                        }
+                    }
+                }
+            }
+
             this._boxes.push({ box, x, y, z, orientation });
         }
     }
@@ -133,8 +144,16 @@ function setOrientation(boxes, orientations) {
 const boxes1 = [
     new Box(1, 1, 2),
     new Box(1, 2, 1),
+    new Box(1, 1, 2),
+    new Box(1, 2, 1),
+    new Box(1, 1, 2, true),
+    new Box(1, 2, 1),
 ];
 const boxes2 = [
+    new Box(1, 1, 2),
+    new Box(1, 2, 1, true),
+    new Box(1, 1, 2),
+    new Box(1, 2, 1, true),
     new Box(1, 1, 2),
     new Box(1, 2, 1),
 ];
