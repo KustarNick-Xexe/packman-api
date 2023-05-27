@@ -118,7 +118,7 @@ app.get('/api/pack', getMiddleware, (req, res) => {
     const temp = [];
     listBox = listBox.filter((box) => !used.includes(box.id));
     for (let i = 0; i < listBox.length; i++) {
-      if(totalW + listBox[i].m <= binWeight) {
+      if (totalW + listBox[i].m <= binWeight) {
         temp.push(listBox[i]);
         used.push(listBox[i].id);
         totalW += listBox[i].m;
@@ -139,8 +139,6 @@ app.get('/api/pack', getMiddleware, (req, res) => {
     }
     routeCargos.push(temp.filter(subarray => subarray.length > 0));
   });
-
-  //console.log(routeCargos);
 
   for (let i = 0; i < routeCargos.length; i++) {
     let bins = [];
@@ -168,13 +166,23 @@ app.get('/api/pack', getMiddleware, (req, res) => {
       return bin;
     });
 
-    bins.forEach(bin => {
+
+    const scores = bins.map((bin, index) => {
+      return { id: index, score: bin._boxes.reduce((sum, box) =>
+         sum + (bin.binDepth - (box.z + box.box.d)), 0) };
+    });
+
+    const bestScore = scores.sort((a, b) => b.score - a.score)[0].id;
+
+    console.log(bins[bestScore]._boxes.map(box =>
+      [box.x, box.y, box.z, ...box.box.dimensions, box.box.fragile ]));
+    /* bins.forEach(bin => {
       console.log(bin._boxes.map(packedBox => {
-        const { box, x, y, z, orientation } = packedBox;
+        const { box, x, y, z, o._boxes
         box.orientation = orientation;
-        return [ box.id, x, y, z, ...box.dimensions, box.fragile];
+        return [box.id, x, y, z, ...box.dimensions, box.fragile];
       }));
-    }); 
+    }); */
   }
 
   const answer = Math.random() > 0.35 ? 1 : 0;
@@ -182,6 +190,8 @@ app.get('/api/pack', getMiddleware, (req, res) => {
   _routes = [];
   clientCargos = [];
   routeCargos = [];
+  vehicleCargos = [];
+  used = [];
   return res.status(200).json({ success: answer, volume: 50 });
 });
 

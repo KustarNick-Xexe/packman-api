@@ -182,15 +182,23 @@ bins = bins.map(bin => {
     return bin;
 });
 
-bins.forEach(bin => {
+/* bins.forEach(bin => {
     console.log(bin._boxes.map(packedBox => {
         const { box, x, y, z, orientation } = packedBox;
         // Устанавливаем ориентацию перед получением размеров коробки
         box.orientation = orientation;
         return [x, y, z, ...box.dimensions, box.fragile];
     }));
+}); */
+
+//console.log(bins.map((bin) => bin._boxes));
+
+const res = bins.map((bin) => {
+    return {id: bin.id, score: bin._boxes.reduce((sum, box) => sum + (bin.binDepth - (box.z + box.box.d)), 0)};
 });
 
-console.log(bins.map(bin => {
+console.log(res.sort((a, b) => b.score - a.score));
+
+/* console.log(bins.map(bin => {
     bin._boxes.map(box => [box.x, box.y, box.z, box.w, box.h, box.d, box.fragile])
-}))
+})) */
