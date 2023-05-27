@@ -1,12 +1,13 @@
 class Box {
-    constructor(w, h, d, fragile = false, orientation = 0) {
+    constructor(id, w, h, d, m, c, fragile = false, orientation = 0) {
+        this.id = id;
         this.x = 0; this.y = 0; this.z = 0;
-        this.w = w; this.h = h; this.d = d;
+        this.w = w; this.h = h; this.d = d; this.m = m; this.idc = c;
         this.fragile = fragile;
         this.orientation = orientation;
     }
     get coordinates() {
-        return [this.x, this.y, this.z];
+      return [this.x, this.y, this.z];
     }
     get dimensions() {
         switch (this.orientation) {
@@ -24,7 +25,8 @@ class Box {
 }
 
 class Bin {
-    constructor(binWidth, binHeight, binDepth) {
+    constructor(id, binWidth, binHeight, binDepth) {
+        this.id = id;
         this.binWidth = binWidth;
         this.binHeight = binHeight;
         this.binDepth = binDepth;
@@ -142,25 +144,20 @@ function setOrientation(boxes, orientations) {
 }
 
 const boxes1 = [
-    new Box(1, 1, 2),
-    new Box(1, 2, 1),
-    new Box(1, 1, 2),
-    new Box(1, 2, 1),
-    new Box(1, 1, 2, true),
-    new Box(1, 2, 1),
+    new Box(1, 5, 11, 5, 10),
+    new Box(1, 11, 5, 11, 10),
+    new Box(1, 5, 11, 5, 10),
+    new Box(1, 11, 5, 11, 10),
 ];
+
 const boxes2 = [
-    new Box(1, 1, 2),
-    new Box(1, 2, 1, true),
-    new Box(1, 1, 2),
-    new Box(1, 2, 1, true),
-    new Box(1, 1, 2),
-    new Box(1, 2, 1),
+    new Box(1, 11, 5, 11, 10),
+    new Box(1, 5, 11, 5, 10),
 ];
 
 let bins = [];
-for (let i = 0; i < 2; i++) {
-    bins.push(new Bin(10, 10, 10));
+for (let i = 0; i < 3; i++) {
+    bins.push(new Bin(1, 100, 100, 100));
 }
 
 const boxes = [boxes1, boxes2];
@@ -194,6 +191,6 @@ bins.forEach(bin => {
     }));
 });
 
-/* console.log(bins.map(bin => {
+console.log(bins.map(bin => {
     bin._boxes.map(box => [box.x, box.y, box.z, box.w, box.h, box.d, box.fragile])
-})) */
+}))
