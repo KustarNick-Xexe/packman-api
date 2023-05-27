@@ -1,5 +1,6 @@
 module.exports.Bin = class Bin {
-    constructor(binWidth, binHeight, binDepth) {
+    constructor(id, binWidth, binHeight, binDepth) {
+        this.id = id;
         this.binWidth = binWidth;
         this.binHeight = binHeight;
         this.binDepth = binDepth;

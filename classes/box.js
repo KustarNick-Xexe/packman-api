@@ -1,6 +1,7 @@
 module.exports.Box = class Box {
-    constructor(w, h, d, fragile = false, orientation = 0) {
-      this.x = 0; this.y = 0; this.z = 0;
+    constructor(id, w, h, d, fragile = false, orientation = 0) {
+        this.id = id;
+        this.x = 0; this.y = 0; this.z = 0;
         this.w = w; this.h = h; this.d = d;
         this.fragile = fragile;
         this.orientation = orientation;

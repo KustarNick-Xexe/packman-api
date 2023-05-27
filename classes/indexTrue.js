@@ -169,15 +169,13 @@ bins = bins.map(bin => {
     const variants = [];
     boxes.forEach(_boxes => {
         let orientations = [];
-        for (let i = 0; i < 2; i++) {
-            do {
-                orientations = [];
-                for (let j = 0; j < _boxes.length; j++) {
-                    const orientation = Math.floor(Math.random() * 6);
-                    orientations.push(orientation);
-                }
-            } while (!isPackable(_boxes, orientations, bin));
-        }
+        do {
+            orientations = [];
+            for (let j = 0; j < _boxes.length; j++) {
+                const orientation = Math.floor(Math.random() * 6);
+                orientations.push(orientation);
+            }
+        } while (!isPackable(_boxes, orientations, bin));
         _boxes = setOrientation(_boxes, orientations);
         const packedBoxes = bin.pack(_boxes);
         bin.save(packedBoxes);
