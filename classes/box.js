@@ -20,6 +20,7 @@ module.exports.Box = class Box {
         }
     }
     get volume() {
+        [this.w, this.h, this.d] = this.dimensions;
         return this.w * this.h * this.d;
     }
 }

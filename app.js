@@ -33,10 +33,12 @@ let binHeight = 0;
 let binDepth = 0;
 let binWeight = 0;
 let binId = 0;
+let _vehicles = [];
 
 const getMiddleware = async (req, res, next) => {
   const response = await axios.get('http://localhost:3007/api/vehicles');
   const vehicles = response.data;
+  _vehicles = vehicles;
   const vehicle = vehicles[0];
   binId = vehicle.id;
   binWidth = vehicle.width;
@@ -94,7 +96,9 @@ function setOrientation(boxes, orientations) {
   return boxes;
 }
 
-app.get('/api/pack', getMiddleware, (req, res) => {
+let totalPacking = [];
+
+app.get('/api/pack', getMiddleware, async (req, res) => {
   _routes.forEach(route => {
     const routeBoxes = [];
     route.forEach(client => {
@@ -140,6 +144,9 @@ app.get('/api/pack', getMiddleware, (req, res) => {
     routeCargos.push(temp.filter(subarray => subarray.length > 0));
   });
 
+  const results = [];
+  const binV = binWidth * binHeight * binDepth;
+  let boxesV = 0;
   for (let i = 0; i < routeCargos.length; i++) {
     let bins = [];
     for (let j = 0; j < 1; j++) {
@@ -174,25 +181,28 @@ app.get('/api/pack', getMiddleware, (req, res) => {
 
     const bestScore = scores.sort((a, b) => b.score - a.score)[0].id;
 
-    console.log(bins[bestScore]._boxes.map(box =>
+    totalPacking.push(bins[bestScore]._boxes.map(box =>
       [box.x, box.y, box.z, ...box.box.dimensions, box.box.fragile ]));
-    /* bins.forEach(bin => {
-      console.log(bin._boxes.map(packedBox => {
-        const { box, x, y, z, o._boxes
-        box.orientation = orientation;
-        return [box.id, x, y, z, ...box.dimensions, box.fragile];
-      }));
-    }); */
+
+    boxesV += bins[bestScore]._boxes.reduce((sum, box) => sum + box.box.volume, 0)
+  }
+
+  for(let i = 0; i < totalPacking.length; i++) {
+    const data = { plan: JSON.stringify(totalPacking[i]), idVehicle: _vehicles[i].id };
+    await axios.post('http://localhost:3007/api/plans', data);
+    console.log(data);
   }
 
   const answer = Math.random() > 0.35 ? 1 : 0;
+  const volume = (binV * routeCargos.length - boxesV) / (binV * routeCargos.length);
   _cargos = [];
   _routes = [];
   clientCargos = [];
   routeCargos = [];
   vehicleCargos = [];
   used = [];
-  return res.status(200).json({ success: answer, volume: 50 });
+  console.log(volume);
+  return res.status(200).json({ success: answer, volume: volume * 100 });
 });
 
 const postMiddleware = [getRoutesMiddleware, getGargosMiddleware];
