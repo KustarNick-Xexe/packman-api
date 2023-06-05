@@ -22,19 +22,19 @@ module.exports.Bin = class Bin {
     }
 
     pack(boxes) {
+        boxes = [...boxes].sort((a, b) => a.fragile - b.fragile);
         this._bin = JSON.parse(JSON.stringify(this.bin));
         let placements = [];
-        boxes = boxes.sort((a, b) => b.volume - a.volume);
         for (let box of boxes) {
             let [boxWidth, boxHeight, boxDepth] = box.dimensions;
             outer:
             for (let x = 0; x <= this.binWidth - boxWidth; x++) {
-                for (let y = 0; y <= this.binHeight - boxHeight; y++) {
-                    for (let z = 0; z <= this.binDepth - boxDepth; z++) {
+                for (let z = 0; z <= this.binDepth - boxDepth; z++) {
+                    for (let y = 0; y <= this.binHeight - boxHeight; y++) {
                         let isFree = true;
                         for (let i = 0; i < boxWidth; i++) {
-                            for (let j = 0; j < boxHeight; j++) {
-                                for (let k = 0; k < boxDepth; k++) {
+                            for (let k = 0; k < boxDepth; k++) {
+                                for (let j = 0; j < boxHeight; j++) {
                                     if (this._bin[x + i][y + j][z + k] !== 0) {
                                         isFree = false;
                                         break;
@@ -46,17 +46,17 @@ module.exports.Bin = class Bin {
                         }
                         if (isFree) {
                             for (let i = 0; i < boxWidth; i++) {
-                                for (let j = 0; j < boxHeight; j++) {
-                                    for (let k = 0; k < boxDepth; k++) {
-                                        this._bin[x + i][y + j][z + k] = box.fragile ? 2 : 1;
+                                for (let k = 0; k < boxDepth; k++) {
+                                    for (let j = 0; j < boxHeight; j++) {
+                                        this._bin[x + i][y + j][z + k] = 1;
                                     }
                                 }
                             }
                             if (box.fragile) {
                                 for (let i = 0; i < boxWidth; i++) {
-                                    for (let j = 0; j < boxHeight; j++) {
-                                        for (let k = z + boxDepth; k < this.binDepth; k++) {
-                                            this._bin[x + i][y + j][k] = 2;
+                                    for (let k = z + boxDepth; k < this.binDepth; k++) {
+                                        for (let j = 0; j < boxHeight; j++) {
+                                            this._bin[x + i][y + j][k] = 1;
                                         }
                                     }
                                 }

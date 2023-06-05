@@ -10,10 +10,13 @@ app.use(bodyParser.json());
 
 let _routes = [];
 let _cargos = [];
+let _vvehicles = [];
+let _idvv = [];
 
 const getRoutesMiddleware = (req, res, next) => {
   const points = req.body.routes.map(route => route.split('-'));
   const routes = points.map(route => route.slice(1, -1));
+  _idvv = req.body.vehicle.map(item => +item);
   req.routes = routes.map(route => route.map(point => +point));
   req.clientsId = [...req.routes.flat()];
   _routes = req.routes;
@@ -41,8 +44,8 @@ const getMiddleware = async (req, res, next) => {
   _vehicles = vehicles;
   const vehicle = vehicles[0];
   binId = vehicle.id;
-  binWidth = vehicle.width;
-  binHeight = vehicle.length;
+  binWidth = vehicle.length;
+  binHeight = vehicle.width;
   binDepth = vehicle.height;
   binWeight = vehicle.weight;
 
@@ -51,7 +54,7 @@ const getMiddleware = async (req, res, next) => {
   for (const id of clients) {
     const cargos = _cargos.map(cargo => {
       if (cargo.idClient === id) {
-        return [cargo.id, cargo.width, cargo.length, cargo.height, cargo.weight, cargo.idClient];
+        return [cargo.id, cargo.width, cargo.length, cargo.height, cargo.weight, cargo.fragile, cargo.idClient];
       }
     });
     clientCargos.push({ id: id, cargos: cargos.filter(cargo => cargo !== undefined) });
@@ -96,22 +99,22 @@ function setOrientation(boxes, orientations) {
   return boxes;
 }
 
-let totalPacking = [];
-
 app.get('/api/pack', getMiddleware, async (req, res) => {
+  const save = req.query.save;
+  const who = req.query.who;
+  console.log(save,who);
   _routes.forEach(route => {
     const routeBoxes = [];
     route.forEach(client => {
 
       routeBoxes.push(clientCargos.find(item => item.id === client).cargos.map(item => {
-        return new Box(item[0], item[1], item[2], item[3], item[4], item[5]);
+        return new Box(item[0], item[1], item[2], item[3], item[4], item[6], item[5]);
       }));
     });
     routeCargos.push(routeBoxes);
   });
 
   routeCargos = removeEmptyArrays(routeCargos).map(item => item.flat());
-  //console.log(routeCargos);
 
   let vehicleCargos = [];
   let totalW = 0;
@@ -147,6 +150,9 @@ app.get('/api/pack', getMiddleware, async (req, res) => {
   const results = [];
   const binV = binWidth * binHeight * binDepth;
   let boxesV = 0;
+  let resboxes = [];
+  let totalPacking = [];
+  let index = 0;
   for (let i = 0; i < routeCargos.length; i++) {
     let bins = [];
     for (let j = 0; j < 1; j++) {
@@ -154,15 +160,22 @@ app.get('/api/pack', getMiddleware, async (req, res) => {
     }
     const boxes = routeCargos[i];
 
+    let count = 0;
     bins = bins.map(bin => {
       const variants = [];
       boxes.forEach(_boxes => {
         let orientations = [];
         do {
+          count++;
           orientations = [];
+          _boxes = _boxes.sort((a, b) => b.volume - a.volume);
           for (let j = 0; j < _boxes.length; j++) {
             const orientation = Math.floor(Math.random() * 6);
             orientations.push(orientation);
+          }
+          if (count > 20) {
+            count = 0;
+            return res.status(200).json({ success: 0, volume: 0 });
           }
         } while (!isPackable(_boxes, orientations, bin));
         _boxes = setOrientation(_boxes, orientations);
@@ -175,34 +188,45 @@ app.get('/api/pack', getMiddleware, async (req, res) => {
 
 
     const scores = bins.map((bin, index) => {
-      return { id: index, score: bin._boxes.reduce((sum, box) =>
-         sum + (bin.binDepth - (box.z + box.box.d)), 0) };
+      return {
+        id: index, score: bin._boxes.reduce((sum, box) =>
+          sum + (bin.binDepth - (box.z + box.box.d)), 0)
+      };
     });
 
     const bestScore = scores.sort((a, b) => b.score - a.score)[0].id;
+    resboxes.push(bins[bestScore]._boxes.map(box =>
+      [box.x, box.y, box.z, ...box.box.dimensions, box.box.fragile]));
 
-    totalPacking.push(bins[bestScore]._boxes.map(box =>
-      [box.x, box.y, box.z, ...box.box.dimensions, box.box.fragile ]));
-
+    bins[bestScore]._boxes.forEach(box => _vvehicles.push(_idvv[index]));
+    index++;
     boxesV += bins[bestScore]._boxes.reduce((sum, box) => sum + box.box.volume, 0)
+    totalPacking.push(resboxes.map(item => [...item]).flat());
+    resboxes = [];
+  }
+  totalPacking = totalPacking.flat();
+  if (save == 1) {
+    for (let i = 0; i < totalPacking.length; i++) {
+      const data = { plan: JSON.stringify( totalPacking[i]), idVehicle: _vvehicles[i] };
+      if(who == 1) {
+        await axios.post('http://localhost:3007/api/plans2', data);
+      } else {
+        await axios.post('http://localhost:3007/api/plans', data);
+      }
+    }
   }
 
-  for(let i = 0; i < totalPacking.length; i++) {
-    const data = { plan: JSON.stringify(totalPacking[i]), idVehicle: _vehicles[i].id };
-    await axios.post('http://localhost:3007/api/plans', data);
-    console.log(data);
-  }
-
-  const answer = Math.random() > 0.35 ? 1 : 0;
   const volume = (binV * routeCargos.length - boxesV) / (binV * routeCargos.length);
+  _idvv = [];
+  _vvehicles = [];
   _cargos = [];
   _routes = [];
   clientCargos = [];
   routeCargos = [];
   vehicleCargos = [];
   used = [];
-  console.log(volume);
-  return res.status(200).json({ success: answer, volume: volume * 100 });
+
+  return res.status(200).json({ success: 1, volume: volume * 2000 });
 });
 
 const postMiddleware = [getRoutesMiddleware, getGargosMiddleware];
